@@ -1,0 +1,37 @@
+---
+- set_fact:
+    logging_pub: 'https://kibana.url-nonprod.domain.com'
+    master_pub: 'https://url-nonprod.domain.com:443'
+    metrics_pub: 'https://hawkular-metrics.url-nonprod.domain.com/hawkular/metrics'
+    public_url: 'https://url-nonprod.domain.com/console/'
+    key_f: '/etc/origin/master/named_certificates/url-nonprod.domain.com.key'
+    cert_f: '/etc/origin/master/named_certificates/url-nonprod.domain.com.crt'
+    sub_domain: 'url-nonprod.domain.com'
+    master_sub_url: 'ocp-master-nonprod.domain.com'
+    master_url: 'https://ocp-master-nonprod.domain.com'
+    bind: 'cn=admin,ou=Service,ou=Accounts,dc=domain,dc=com'
+    url: 'ldaps://<something>'
+    cert_auth: 'domain-sha2-ca.crt'
+    image_format: 'registry-internal.domain.com:5000/openshift3/ose-${component}:${version}'
+
+- name: set_etcd0
+  set_fact:
+    etcd_host0: "etcdhost0.domain.com"
+    etcd_host1: "etcdhost1.domain.com"
+    etcd_host2: "etcdhost2.domain.com"
+  when: ansible_fqdn == "etcdhost0.domain.com" 
+
+- name: set_etcd1
+  set_fact:
+    etcd_host0: "etcdhost1.domain.com"
+    etcd_host1: "etcdhost2.domain.com"
+    etcd_host2: "etcdhost0.domain.com"
+  when: ansible_fqdn == "etcdhost1.domain.com" 
+
+- name: set_etcd2
+  set_fact:
+    etcd_host0: "etcdhost2.domain.com"
+    etcd_host1: "etcdhost0.domain.com"
+    etcd_host2: "etcdhost1.domain.com"
+  when: ansible_fqdn == "etcdhost2.domain.com" 
+

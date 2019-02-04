@@ -1,0 +1,140 @@
+---
+# tasks file for role_cluster_config
+- name: set cluster prod
+  include: set_facts_prod.yaml
+  when: "'prod' == ansible_local.cluster.env.is"
+  tags:
+  - master
+  - node
+
+- name: set cluster dr
+  include: set_facts_dr.yaml
+  when: "'dr' == ansible_local.cluster.env.is"
+  tags:
+  - master
+  - node
+
+- name: set cluster stage
+  include: set_facts_nonprod.yaml
+  when: "'stage' == ansible_local.cluster.env.is"
+  tags:
+  - master
+  - node
+
+- name: set cluster sandbox
+  include: set_facts_sandbox.yaml
+  when: "'sandbox' == ansible_local.cluster.env.is"
+  tags:
+  - master
+  - node
+
+- name: deploy master configs
+  block:
+  - name: master config
+    template:
+      src: master-config.yaml.j2
+      dest: /etc/origin/master/master-config.yaml
+      backup: yes
+      owner: root
+      group: root
+      mode: 0600
+    register: master_config
+
+  - name: master api config
+    template:
+      src: atomic-openshift-master-api.j2
+      dest: /etc/sysconfig/atomic-openshift-master-api
+      backup: yes
+      owner: root
+      group: root
+    register: master_api
+
+  - name: master controllers config
+    copy:
+      src: atomic-openshift-master-controllers
+      dest: /etc/sysconfig/atomic-openshift-master-controllers
+      backup: yes
+      owner: root
+      group: root
+    register: master_control
+
+  - name: sysconfig master config
+    copy:
+      src: atomic-openshift-master
+      dest: /etc/sysconfig/atomic-openshift-master
+      backup: yes
+      owner: root
+      group: root
+    register: master_sys_config
+
+  - name: Restarting master services
+    service:
+      name: "{{ item }}"
+      state: restarted
+    with_items:
+      - atomic-openshift-master-controllers
+      - atomic-openshift-master-api
+    when: master_config.changed or
+          master_api.changed or
+          master_control.changed or
+          master_sys_config.changed
+
+  - pause:
+      seconds: 30
+
+  when: "'master' == ansible_local.openshift.node.labels.type"
+  tags:
+  - master
+
+- name: deploy node configs
+  block:
+  - name: oc drain node
+    local_action: command /bin/oc adm drain {{ inventory_hostname }} --force=True  --delete-local-data=True --ignore-daemonsets=True
+      
+  - name: set node config
+    template:
+      src: node-config.yaml.j2
+      dest: /etc/origin/node/node-config.yaml
+      owner: root
+      group: root
+      mode: 0600
+      backup: yes
+    register: node_config
+
+  - name: set node sysconfig
+    copy:
+      src: atomic-openshift-node
+      dest: /etc/sysconfig/atomic-openshift-node
+      backup: yes
+      owner: root
+      group: root
+      mode: 0644
+    register: node_sysconfig
+
+  - name: restart node services
+    service:
+      name: "{{ item }}"
+      state: restarted
+    with_items:
+      - atomic-openshift-node
+    when: node_config.changed or
+          node_sysconfig.changed
+
+  - name: re-schedule OpenShift node service
+    local_action: command /bin/oc adm uncordon {{ inventory_hostname }}
+    when: ansible_local.cluster.env.node is search("app") or
+          ansible_local.cluster.env.node is search("infra")
+
+  - name: verify node cluster state
+    local_action: command /bin/oc describe no {{ inventory_hostname }}
+    register: verify
+    until: verify.stdout.find("True") != -1
+    retries: 10
+    delay: 5
+
+  - pause:
+      seconds: 45
+
+  tags:
+  - node
+

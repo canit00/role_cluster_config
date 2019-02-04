@@ -1,0 +1,66 @@
+allowDisabledDocker: false
+apiVersion: v1
+dnsBindAddress: 127.0.0.1:53
+dnsRecursiveResolvConf: /etc/origin/node/resolv.conf
+dnsDomain: cluster.local
+dnsIP: {{ ansible_default_ipv4.address }}
+dockerConfig:
+  execHandlerName: ""
+iptablesSyncPeriod: "30s"
+imageConfig:
+  format: {{ image_format }}
+  latest: False
+kind: NodeConfig
+kubeletArguments:
+  enable-controller-attach-detach:
+  - 'true'
+  eviction-hard:
+  - "memory.available<1Gi"
+  image-gc-high-threshold:
+  - "80"
+  image-gc-low-threshold:
+  - "60"
+  kube-reserved:
+  - "cpu={{ ((ansible_processor_vcpus * 100) * 1) }}m,memory={{ ansible_memtotal_mb * 0.05 }}Mi"
+  system-reserved:
+  - "cpu={{ ((ansible_processor_vcpus * 100) * 1) }}m,memory={{ ansible_memtotal_mb * 0.10 }}Mi"
+  max-pods:
+  - "80"
+  serialize-image-pulls:
+  - "false"
+  node-labels:
+  {% for k, v in ansible_local.openshift.node.labels.iteritems() -%}
+  - {{ k }}={{ v }}
+  {% endfor %}
+maximum-dead-containers-per-container:
+  - "2"
+  minimum-container-ttl-duration:
+  - "1m"
+  maximum-dead-containers:
+  - "325"
+masterClientConnectionOverrides:
+  acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
+  contentType: application/vnd.kubernetes.protobuf
+  burst: 200
+  qps: 100
+masterKubeConfig: system:node:{{ ansible_fqdn }}.kubeconfig
+networkPluginName: redhat/openshift-ovs-multitenant
+# networkConfig struct introduced in origin 1.0.6 and OSE 3.0.2 which
+# deprecates networkPluginName above. The two should match.
+networkConfig:
+   mtu: 1450
+   networkPluginName: redhat/openshift-ovs-multitenant
+nodeName: {{ ansible_fqdn }}
+podManifestConfig:
+servingInfo:
+  bindAddress: 0.0.0.0:10250
+  certFile: server.crt
+  clientCA: ca.crt
+  keyFile: server.key
+volumeDirectory: /var/lib/origin/openshift.local.volumes
+proxyArguments:
+  proxy-mode:
+     - iptables
+volumeConfig:
+  localQuota:
+    perFSGroup:

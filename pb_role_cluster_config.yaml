@@ -1,0 +1,11 @@
+---
+# Role to update cluster configuration including node and masters.
+# How-to:
+# masters:
+# ansible-playbook -l masters -t master -v pb_role_cluster_config.yaml --ask-vault-pass
+# nodes:
+# ansible-playbook -l nodes -t node -v pb_role_cluster_config.yaml
+- hosts: all
+  serial: 1
+  roles:
+    - { role: role_cluster_config }

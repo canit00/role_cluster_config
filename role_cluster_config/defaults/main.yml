@@ -1,0 +1,3 @@
+---
+# defaults file for role_cluster_config
+req_message: '"To request a new OpenShift Enterprise Project, please submit a new Project request via service-now using the OPENSHIFT group: \n\nhttps://your-site.service-now.com"'

@@ -3,7 +3,7 @@ Role Name
 
 Role to update master and compute node configuration across multiple clusters utilizing one role.
 
-##### Caveat to uncording hosts in the playbook. As of OpenShift v3.9 master nodes now have to be scheduleable due to the fact that they now run webconsole containers and docker garbage collection if one switches to CRI-O runtime.
+##### Caveat to role: uncording hosts in the playbook is limited to infra and compute nodes. As of OpenShift v3.9 master nodes now have to be scheduleable due to the fact that they now run webconsole containers and docker garbage collection if one switches to CRI-O runtime.
 
 Requirements
 ------------

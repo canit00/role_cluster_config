@@ -1,22 +1,24 @@
 Role Name
 =========
 
-Role to update master configuration file across multiple clusters.
+Role to update master and compute node configuration across multiple clusters utilizing one role.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+* See Dependencies for required system facts.
+* Enter your cluster facts under the [role/tasks](https://github.com/canit00/role_cluster_config/tree/master/role_cluster_config/tasks)
+* See Role Variables to encrypt LDAP bind password.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The only required variable for this playbook is the password [pass_variable](https://github.com/canit00/role_cluster_config/blob/d70d68fb865e9cf2decd6f5f742f8c05563090e0/role_cluster_config/templates/master-config.yaml.j2#L156) used in the master-config.yaml.j2 template.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role depends on ansible_local facts and should be set prior to running role. [Example.](https://github.com/canit00/openshift/blob/master/2018/ansible/playbooks/pb_set_cluster_facts.yaml)
 
 Example Playbook
 ----------------
@@ -25,16 +27,17 @@ Including an example of how to use your role (for instance, with variables passe
 
     # How-to:
     # ansible-playbook -l masters -t master -v pb_role_cluster_config.yaml --ask-vault-pass
-    - hosts: masters
+    # ansible-playbook -l compute -t node -v pb_role_cluster_config.yaml
+    - hosts: all
       roles:
          - { role: role_cluster_config }
 
 License
 -------
 
-BSD
+GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Copyright: (c) 2018, canit00 <[email protected]>

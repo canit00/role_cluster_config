@@ -6,6 +6,7 @@
 # nodes:
 # ansible-playbook -l nodes -t node -v pb_role_cluster_config.yaml
 - hosts: all
+  gather_facts: True
   serial: 1
   roles:
     - { role: role_cluster_config }
